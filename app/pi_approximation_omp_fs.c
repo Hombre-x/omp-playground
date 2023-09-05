@@ -16,9 +16,9 @@ typedef int thread_id_t;
  * @param from Initial number of the series
  * @param to Number of terms at the end of the series
  */
-static double pi_approx(long from, long to)
+static double * pi_approx(long from, long to, thread_id_t thread_id, double * pi)
 {
-  double pi = 0.0;
+  // double pi = 0.0;
   int sign = 0;
 
   if (from % 2 == 0) sign = 1;
@@ -26,26 +26,24 @@ static double pi_approx(long from, long to)
 
   for (long i = from; i <= to; i++)
   {
-    pi += sign / (2.0 * (double) i + 1.0);
+    pi[thread_id] += sign / (2.0 * (double) i + 1.0);
     sign *= -1;
   }
 
   return pi;
 }
 
-static double * parallel_pi_approx_ts(const int n_threads, const long terms, double pi[n_threads])
+static double * parallel_pi_approx_fs(const int n_threads, const long terms, double pi[n_threads])
 {
   #pragma omp parallel num_threads(n_threads)
   {
     thread_id_t thread_id = omp_get_thread_num();
 
     long chunk = terms / n_threads;
-    long from = thread_id * terms;
+    long from = thread_id * chunk;
     long to = from + chunk - 1;
 
-    double current_pi = pi_approx(from, to);
-
-    pi[thread_id] = current_pi;    
+    pi_approx(from, to, thread_id, pi);
   }
 
   return pi;
@@ -57,8 +55,8 @@ int main(int argc, char const *argv[])
   const long terms    = 2e9;
   double pi_arr[n_threads];
 
-  parallel_pi_approx_ts(n_threads, terms, pi_arr);
-
+  parallel_pi_approx_fs(n_threads, terms, pi_arr);
+  
   const double pi = 4 * sum_arr(n_threads, pi_arr);
 
   printf("Value of π with %2d threads is: %.16f, error: %0.6e\n", n_threads, pi, fabs(M_PI - pi));

@@ -53,3 +53,7 @@ for i in (seq 1 6)
   printf "| %6d |   %0.7f   |   %0.7f   |" $numberOfThreads[$i] $falseSharingTimes[$i] $trueSharingTimes[$i] 
   echo \n
 end
+
+# Delete the executables
+rm $leibnizFs
+rm $leibnizTs

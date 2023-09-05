@@ -82,7 +82,7 @@ static void ** parallel_pi_approx_ts(const int n_threads, const long terms, doub
     thread_id_t thread_id = omp_get_thread_num();
 
     long chunk = terms / n_threads;
-    long from = thread_id * terms;
+    long from = thread_id * chunk;
     long to = from + chunk - 1;
 
     double current_pi = pi_approx(from, to);
